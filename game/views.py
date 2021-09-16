@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
@@ -63,4 +65,11 @@ class GetStackViewWords(APIView):
         , 'bread', 'charge', 'proper', 'bar', 'offer', 'segment', 'slave', 'duck', 'instant', 'market', 'degree', 'populate', 'chick', 'dear', 'enemy', 'reply', 'drink', 'occur', 'support', 'speech', 'nature', 'range'
         , 'steam', 'motion', 'path', 'liquid', 'log', 'meant', 'quotient', 'teeth', 'shell', 'neck']
 
-        return Response({'words' : Dictionary}, status= status.HTTP_200_OK)
+        index = [random.randrange(1, len(Dictionary), 1) for i in range(50)]
+        print(index)
+        words = []
+        for i in index:
+            words.append(Dictionary[i]) 
+
+        return Response({'words' : words}, status= status.HTTP_200_OK)
+
