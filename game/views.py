@@ -100,49 +100,57 @@ class LeaderBoardView(APIView):
         # serializer_class = GameDetailSerializer
         # queryset = GameDetail.objects.all()
         def get(self, result):
-                try:
-                        users = User.objects.all()
-                        result = []
-                        
-                        for user in users:
-                                sum_matches = GameDetail.objects.filter(user = user.id).aggregate(Sum('user'))
-                                score = GameDetail.objects.filter(user = user.id).aggregate(Avg('score'))
-                                level = GameDetail.objects.filter(user = user.id).aggregate(Max('level'))
-                                streak = GameDetail.objects.filter(user = user.id).aggregate(Max('streak'))
-                                print(user.username, score, level, streak, sum_matches )
-                                if sum_matches["user__sum"]:
-                                        data = {}
-                                        data["username"] = user.username
-                                        data["score"] = score['score__avg']
-                                        data['level'] = level['level__max']
-                                        data['streak'] = streak['streak__max']
-                                        print(data)
-                                        result.append(data)
-                                        
-                                # if sum_matches:
-                                #         data = {"matches" : sum_matches.user__sum/user.id, "score" : score.score__avg, "level" : level.level__max, "streak" : streak.streak__max}
-                                #         result.append(data)
-                        # Note.objects.filter(image_id = id)
-                        # print(id,user, "*********************88")
-                        if result:
-                                print(result)
-                                return Response(result, status = status.HTTP_200_OK)
-                        else:
-                                data = {"result":"emplt result set"}
-                                return Response(data, status = status.HTTP_400_BAD_REQUEST) 
-                except:
-                        data = {"params":"please check the input parameters"}
-                        return Response(data, status = status.HTTP_400_BAD_REQUEST)
-        
+                # try:
+                users = User.objects.all()
+                result = []
+                
+                for user in users:
+                        sum_matches = GameDetail.objects.filter(user = user.id).aggregate(Sum('user'))
+                        score = GameDetail.objects.filter(user = user.id).aggregate(Avg('score'))
+                        level = GameDetail.objects.filter(user = user.id).aggregate(Max('level'))
+                        streak = GameDetail.objects.filter(user = user.id).aggregate(Max('streak'))
+                        print(user.username, score, level, streak, sum_matches )
+                        if sum_matches["user__sum"]:
+                                data = {}
+                                data["username"] = user.username
+                                data["score"] = score['score__avg']
+                                data['level'] = level['level__max']
+                                data['streak'] = streak['streak__max']
+                                # print(data)
+                                result.append(data)
+                        result = sorted(result, key=lambda item: item['score'], reverse=True)
+                        # print(sort_result, "sorteed")
+                                
+                        # if sum_matches:
+                        #         data = {"matches" : sum_matches.user__sum/user.id, "score" : score.score__avg, "level" : level.level__max, "streak" : streak.streak__max}
+                        #         result.append(data)
+                # Note.objects.filter(image_id = id)
+                # print(id,user, "*********************88")
+                if result:
+                        print(result)
+                        return Response(result, status = status.HTTP_200_OK)
+                # else:
+                #         data = {"result":"emplt result set"}
+                #         return Response(data, status = status.HTTP_400_BAD_REQUEST) 
+                data = {"params":"please check the input parameters"}
+                return Response(data, status = status.HTTP_400_BAD_REQUEST)
+
+                # except:
+                
     
 class UserGameDetails(ListAPIView):
-    serializer_class = GameDetailSerializer
-    def get_queryset(self):
-                try:
-                        user = self.request.query_params['user']
-                        result = GameDetail.objects.filter(user = user)
-                        print(result)
-                        return result
-                except:
-                        data = {"params":"please check the input parameters"}
+
+        serializer_class = GameDetailSerializer
+        def get_queryset(self):
+                if self.request.user:
+                        try:
+                                user = self.request.query_params['user']
+                                result = GameDetail.objects.filter(user = user)
+                                print(result)
+                                return result
+                        except:
+                                data = {"error" : "user not fount"}
+                                return Response(data, status = status.HTTP_404_NOT_FOUND)
+                else:
+                        data = {"error" : "check user parameter"}
                         return Response(data, status = status.HTTP_400_BAD_REQUEST)
